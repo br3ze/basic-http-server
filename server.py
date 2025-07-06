@@ -17,13 +17,31 @@ while True:
   print("Request:")
   print(request)
 
-  # Basic HTTP response
+  # --- Parse the request line ---
+  try:
+    request_line = request.splitlines()[0]
+    method, path, version = request_line.split()
+  except ValueError:
+    # Bad request format
+    client_connection.close()
+    continue
+
+  # --- Handle different paths ---
+  if path == "/":
+    body = "<h1>Welcome to the Home Page</h1>"
+  elif path == "/about":
+    body = "<h1>About This Server</h1><p>It's built with raw Python sockets!</p>"
+  else:
+    body = "<h1>404 Not Found</h1>"
+    
+  # --- Build and send response ---
   http_response = (
     "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/html\r\n"
+    f"Content-Length: {len(body.encode())}\r\n"
     "\r\n"
-    "<html><body><h1>Hello, World!</h1></body></html>"
-    )
+    f"{body}"
+  )
 
 client_connection.sendall(http_response.encode())
 client_connection.close()
